@@ -3,42 +3,42 @@ package auth
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	"golang.org/x/crypto/scrypt"
-	"historymap-microservices/pkg/tools"
 	"log"
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"github.com/worldhistorymap/backend/pkg/tools"
+	"golang.org/x/crypto/scrypt"
 )
 
-
 var (
-	host = tools.GetEnv("users_host", "localhost")
-	port = tools.GetEnv("users_post",  "5432")
-	user = tools.GetEnv("users_user", "postgres")
+	host     = tools.GetEnv("users_host", "localhost")
+	port     = tools.GetEnv("users_post", "5432")
+	user     = tools.GetEnv("users_user", "postgres")
 	password = tools.GetEnv("users_password", "postgres")
-	dbname = tools.GetEnv("users_dbname" , "user_accounts")
+	dbname   = tools.GetEnv("users_dbname", "user_accounts")
 )
 
 var dbParams = fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, port, user, password, dbname)
 
 type UserAccount struct {
 	gorm.Model
-	Username string `gorm:"size:255"`
+	Username     string `gorm:"size:255"`
 	PasswordHash []byte `gorm:"type:text"`
 	PasswordSalt []byte `gorm:"type:text"`
-	ID uint `gorm:"AUTO_INCREMENT"`
-	Email  string  `gorm:"size:255"`
-	Joined time.Time
+	ID           uint   `gorm:"AUTO_INCREMENT"`
+	Email        string `gorm:"size:255"`
+	Joined       time.Time
 }
 
 type NewUser struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Email string `json:"email"`
+	Email    string `json:"email"`
 }
 
 type userLogin struct {
@@ -109,13 +109,12 @@ func signup(db *gorm.DB) http.HandlerFunc {
 	}
 }
 
-
 type JwtToken struct {
 	Token string `json:"jwtToken"`
 }
 
 func login(db *gorm.DB) http.HandlerFunc {
-	return func (w http.ResponseWriter, r *http.Request){
+	return func(w http.ResponseWriter, r *http.Request) {
 		loginReq := new(userLogin)
 		if err := json.NewDecoder(r.Body).Decode(loginReq); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -168,4 +167,3 @@ func createSalt(saltLength int) []byte {
 	}
 	return salt
 }
-

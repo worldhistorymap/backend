@@ -1,6 +1,6 @@
 package main
 
-import "historymap-microservices/pkg/auth"
+import "github.com/worldhistorymap/backend/pkg/auth"
 
 func main() {
 	auth.AuthServer()
