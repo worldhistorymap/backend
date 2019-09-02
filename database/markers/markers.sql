@@ -1,9 +1,5 @@
-CREATE EXTENSION postgis;
-/*https://stackoverflow.com/questions/24981784/how-do-i-add-postgis-to-postgresql-pgadmin */
-CREATE USER docker;
-CREATE DATABASE docker;
-GRANT ALL PRIVILEGES ON DATABASE docker TO docker;
-USE DATABASE docker;
+/**We use a prebuilt docker image with postgis already installed **/
+GRANT ALL PRIVILEGES ON DATABASE gis TO docker;
 CREATE TABLE markers (
     id          BIGINT PRIMARY KEY, 
     info        TEXT, 
