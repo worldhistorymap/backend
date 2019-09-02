@@ -1,0 +1,62 @@
+version: 2.1
+jobs:
+  markers-tag-env-vars:
+    docker:
+      - image: "alpine:3.9"
+    steps:
+      - run: apk add --no-cache ca-certificates
+      - run: mkdir -p /tmp/workspace
+      - run: echo "export TAG=$CIRCLE_TAG" >> /tmp/workspace/env-vars
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - env-vars
+  markers-branch-env-vars:
+    docker:
+      - image: "alpine:3.9"
+    steps:
+      - run: apk add --no-cache ca-certificates
+      - run: mkdir -p /tmp/workspace
+      - run: echo "export TAG=$CIRCLE_SHA1" >> /tmp/workspace/env-vars
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - env-vars
+  markers-build-docker:
+    docker:
+      #FIXME: find image that has docker and also make sure it has circleci creds
+      - image: "circleci/golang:1.8.6-jessie"
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - attach_workspace:
+          at: /tmp/workspace
+      - run: cat /tmp/workspace/env-vars >> $BASH_ENV
+      - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run: docker build -f database/markers/Dockerfile -t $DOCKER_HUB_REPO/markersdb:$TAG database/markers
+      - run: docker push $DOCKER_HUB_REPO/markersdb:$TAG
+workflows:
+  version: 2
+  markers-database:
+    jobs:
+      - markers-branch-env-vars
+      - markers-tag-env-vars:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+      - markers-build-docker:
+          name: "tags"
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
+          requires:
+            - markers-tag-env-vars
+      - markers-build-docker:
+          name: "branches"
+          requires:
+            - markers-branch-env-vars
