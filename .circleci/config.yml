@@ -40,7 +40,6 @@ workflows:
   version: 2
   markers-database:
     jobs:
-      - markers-branch-env-vars
       - markers-tag-env-vars:
           filters:
             tags:
@@ -56,7 +55,3 @@ workflows:
               ignore: /.*/
           requires:
             - markers-tag-env-vars
-      - markers-build-docker:
-          name: "branches"
-          requires:
-            - markers-branch-env-vars
